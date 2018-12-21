@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jube>
+
+<!-- system descriptor -->
+  <include-path>
+  <path tag="galileo">../../platform/galileo</path>
+  </include-path>
+
+  <benchmark name="yambo-max" outpath="agnr-bench">
+    <comment>Yambo benchmark - Graphene Nanoribbon</comment>
+    
+    
+<!-- Job configuration -->
+    <!-- no. of nodes, tasks, etc (default in platform.xml -->
+    <parameterset name="systemParameter" init_with="platform.xml">
+    <parameter name="taskspernode" type="int">4</parameter>
+    <parameter name="accountno" >cin_staff</parameter>
+    <parameter name="executable">yambo</parameter> 
+    <parameter name="args_executable">-F yambo_gw.in -J benchmark$nodes</parameter> 
+    <parameter name="nodes" type="int">2,4</parameter>
+    <parameter name="timelimit">12:00:00</parameter>
+    <parameter name="threads">2,4</parameter>
+    <parameter name="queue">gll_usr_prod</parameter>
+    <parameter name="OMP_NUM_THREADS" export="true">$threads</parameter>
+    </parameterset>
+
+    <!-- initialization of the execution parameters -->
+    <parameterset name="executeset" init_with="platform.xml">
+    </parameterset>
+ 
+    <!-- replacement of the standard values for the execution script -->
+    <substituteset name="executesub" init_with="platform.xml">
+    <sub source="#ACCOUNT_NO#" dest="$accountno" />
+    <sub source="#PREPROCESS#" dest="module load profile/advanced; module load autoload yambo" />
+    </substituteset>
+
+    <!-- files copied from the root into the benchmarks local dir -->
+    <fileset name="jobfiles" init_with="platform.xml">
+    <copy>./SAVE</copy> 
+    <copy>./yambo_gw.in</copy>
+    </fileset>
+
+    <!-- Operation -->
+    <step name="submit"  >
+      <use>systemParameter</use>
+      <use>executeset</use>
+      <use>jobfiles</use>
+      <use>executesub</use>
+      <do done_file="$ready_file" tag="!test">$submit $submit_script</do> <!-- shell command -->
+      <do done_file="$ready_file" tag="test">cat $submit_script</do> <!-- shell command -->
+    </step>    
+
+    <patternset name="pattern">
+       <pattern name="walltime" type="float">walltime $jube_pat_fp</pattern>
+    </patternset>   
+
+    <analyser name="analyse">
+    <use>pattern</use>
+      <analyse step="submit">
+         <file>job.out</file>
+      </analyse>
+    </analyser>
+
+
+   <!-- results -->
+   <result>
+      <use>analyse</use> <!-- use existing analyser -->
+      <table name="result" style="pretty" sort="tasks">
+      <column>nodes</column>
+      <column>tasks</column>
+      <column>threads</column>
+      <column>walltime</column>
+      </table>
+   </result>
+
+
+  </benchmark>
+</jube>

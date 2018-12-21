@@ -1,0 +1,26 @@
+#!/bin/bash
+#SBATCH --nodes=#NODES#                    # node
+#SBATCH --ntasks-per-node=#TASKSPERNODE#   # tasks per node
+#SBATCH --mem=100g
+#SBATCH --error=myJob.err                 # standard error file
+#SBATCH --output=myJob.out                # standard output file
+#SBATCH --account=#ACCOUNT_NO#              # account name
+#SBATCH --partition=#QUEUE#              # partition name
+
+start_time=$(date +"%s")
+
+#PREPROCESS#
+
+#MEASUREMENT# #STARTER# #ARGS_STARTER# #EXECUTABLE# #ARGS_EXECUTABLE#
+
+#POSTPROCESS#
+
+JUBE_ERR_CODE=$?
+if [ $JUBE_ERR_CODE -ne 0 ]; then
+    exit $JUBE_ERR_CODE
+fi
+
+#FLAG#
+end_time=$(date +"%s")
+walltime=$(($end_time-$start_time))
+echo "walltime $walltime"
